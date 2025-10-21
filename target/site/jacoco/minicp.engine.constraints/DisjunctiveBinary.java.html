@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DisjunctiveBinary.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">minicp:minicp</a> &gt; <a href="index.source.html" class="el_package">minicp.engine.constraints</a> &gt; <span class="el_source">DisjunctiveBinary.java</span></div><h1>DisjunctiveBinary.java</h1><pre class="source lang-java linenums">/*
+ * mini-cp is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License  v3
+ * as published by the Free Software Foundation.
+ *
+ * mini-cp is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY.
+ * See the GNU Lesser General Public License  for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with mini-cp. If not, see http://www.gnu.org/licenses/lgpl-3.0.en.html
+ *
+ * Copyright (c)  2018. by Laurent Michel, Pierre Schaus, Pascal Van Hentenryck
+ */
+
+
+package minicp.engine.constraints;
+
+import minicp.engine.core.AbstractConstraint;
+import minicp.engine.core.BoolVar;
+import minicp.engine.core.IntVar;
+import minicp.util.exception.NotImplementedException;
+
+import static minicp.cp.Factory.*;
+
+/**
+ * Constraint enforcing that two activities cannot overlap in time
+ *
+ * The implementation of this constraint uses reified constraints.
+ */
+public class DisjunctiveBinary extends AbstractConstraint implements Comparable&lt;DisjunctiveBinary&gt; {
+
+    // only one of before and after must be true
+    private BoolVar before; // before = true if activity 1 &lt;&lt; activity2
+    private BoolVar after;  // after =  true if activity 1 &gt;&gt; activity2
+    private IntVar start1, start2;
+    private IntVar end1, end2;
+
+    /**
+     * Constraint enforcing that two activities cannot overlap
+     * @param start1 start time of activity 1
+     * @param duration1 duration of activity 1
+     *
+     */
+    public DisjunctiveBinary(IntVar start1, int duration1, IntVar start2, int duration2) {
+<span class="fc" id="L46">        super(start1.getSolver());</span>
+<span class="fc" id="L47">        this.start1 = start1;</span>
+<span class="fc" id="L48">        this.start2 = start2;</span>
+<span class="fc" id="L49">        this.end1 = plus(start1,duration1);</span>
+<span class="fc" id="L50">        this.end2 = plus(start2,duration2);</span>
+<span class="fc" id="L51">        this.before = makeBoolVar(getSolver());</span>
+<span class="fc" id="L52">        this.after = not(before);</span>
+<span class="fc" id="L53">    }</span>
+
+    @Override
+    public void post() {
+        // TODO : post binary decomposition using IsLessOrEqualVar (reified constraints)
+        // one of the two activities must precede the other one
+<span class="fc" id="L59">         throw new NotImplementedException(&quot;DisjunctiveBinary&quot;);</span>
+    }
+
+    /**
+     * Tells if the decision of which activity should come first as already been fixed
+     * @return if the decision of which activity should come first as already been fixed
+     */
+    public boolean isFixed() {
+<span class="nc" id="L67">        return before.isFixed();</span>
+    }
+
+    /**
+     * The total slack (estimation of degree of freedom)
+     * @return the sum of domain sizes of both activities
+     */
+    public int slack() {
+<span class="nc" id="L75">        return start1.size() + start2.size();</span>
+    }
+
+    /**
+     * The total slack if activity 1 would be placed before activity 2
+     * @return slack if activity 1 would be placed before activity 2
+     */
+    public int slackIfBefore() {
+<span class="nc" id="L83">        int slack1 = Math.min(start2.max() - 1, start1.max()) - start1.min();</span>
+<span class="nc" id="L84">        int slack2 = start2.max() - Math.max(start2.min(), end1.min());</span>
+<span class="nc" id="L85">        return slack1 + slack2;</span>
+    }
+
+    /**
+     * The total slack if activity 1 would be placed after activity 2
+     * @return slack if activity 1 would be placed after activity 2
+     */
+    public int slackIfAfter() {
+<span class="nc" id="L93">        int slack2 = Math.min(start1.max() - 1, start2.max()) - start2.min();</span>
+<span class="nc" id="L94">        int slack1 = start1.max() - Math.max(start1.min(), end2.min());</span>
+<span class="nc" id="L95">        return slack1 + slack2;</span>
+    }
+
+    /**
+     * The boolean variable telling if activity 1 comes before activity 2
+     * @return the boolean variable telling if activity 1 comes before activity 2
+     */
+    public BoolVar before() {
+<span class="nc" id="L103">        return before;</span>
+    }
+
+    /**
+     * The boolean variable telling if activity 1 comes after activity 2
+     * @return the boolean variable telling if activity 1 comes after activity 2
+     */
+    public BoolVar after() {
+<span class="nc" id="L111">        return after;</span>
+    }
+
+    /**
+     * A comparator by increasing slack value
+     * @param o the object to be compared.
+     * @return slack() - o.slack()
+     */
+    @Override
+    public int compareTo(DisjunctiveBinary o) {
+<span class="nc" id="L121">        return slack() - o.slack();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

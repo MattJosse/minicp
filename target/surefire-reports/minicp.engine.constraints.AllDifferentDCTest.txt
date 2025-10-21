@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: minicp.engine.constraints.AllDifferentDCTest
+-------------------------------------------------------------------------------
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 22, Time elapsed: 0.056 s - in minicp.engine.constraints.AllDifferentDCTest

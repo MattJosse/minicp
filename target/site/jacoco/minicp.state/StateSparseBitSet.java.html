@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateSparseBitSet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">minicp:minicp</a> &gt; <a href="index.source.html" class="el_package">minicp.state</a> &gt; <span class="el_source">StateSparseBitSet.java</span></div><h1>StateSparseBitSet.java</h1><pre class="source lang-java linenums">/*
+ * mini-cp is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License  v3
+ * as published by the Free Software Foundation.
+ *
+ * mini-cp is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY.
+ * See the GNU Lesser General Public License  for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with mini-cp. If not, see http://www.gnu.org/licenses/lgpl-3.0.en.html
+ *
+ * Copyright (c)  2018. by Laurent Michel, Pierre Schaus, Pascal Van Hentenryck
+ */
+
+package minicp.state;
+
+import java.util.Arrays;
+import minicp.util.exception.NotImplementedException;
+
+
+/**
+ * Class to represent a bit-set that can be saved and restored through
+ * the {@link StateManager#saveState()} / {@link StateManager#restoreState()}
+ */
+public class StateSparseBitSet {
+
+    /* Variables used to store value of the bitset */
+    private final int nWords;
+    private final State&lt;Long&gt;[] words;
+
+    /* Variables used to make set sparse */
+    private final int[] nonZeroIdx;
+    private final StateInt nonZeroSize;
+
+
+    /**
+     * Bitset of the same capacity as the outer {@link StateSparseBitSet}.
+     * It is not synchronized with  {@link StateManager}.
+     * It is rather intended to be used as parameter to the
+     * {@link #and(BitSet)} method to modify the outer {@link StateSparseBitSet}.
+     */
+    public class BitSet {
+        protected long[] words;
+        /**
+         * Initializes a bit-set with the same capacity as the outer {@link StateSparseBitSet}.
+         * All the bits are initially unset. The set it represents is thus empty.
+         */
+<span class="fc" id="L49">        public BitSet() {</span>
+<span class="fc" id="L50">            words = new long[nWords];</span>
+<span class="fc" id="L51">        }</span>
+
+        /**
+         * As for the {@link java.util.BitSet#set(int)}
+         * Sets the bit at the specified index to true
+         *
+         * @param i the bit to set
+         */
+        public void set(int i) {
+<span class="fc" id="L60">            long v = 1L &lt;&lt; i;</span>
+<span class="fc" id="L61">            words[i &gt;&gt;&gt; 6] |= v; // &lt;&lt; is a cyclic shift, (1L &lt;&lt; 64) == 1L</span>
+<span class="fc" id="L62">        }</span>
+
+        /**
+         * As for the {@link java.util.BitSet#get(int)}
+         * Gives the bit at the specified index
+         *
+         * @param i the bit to return
+         * @return true if bit at index i is set
+         */
+        public boolean get(int i) {
+<span class="nc" id="L72">            int wordIndex = i &gt;&gt;&gt; 6;</span>
+<span class="nc bnc" id="L73" title="All 4 branches missed.">            return wordIndex &lt; nWords &amp;&amp; (this.words[wordIndex] &amp; 1L &lt;&lt; i) != 0L;</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L78">            StringBuilder res = new StringBuilder();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">            for (int i = 0; i &lt; nWords; i++) {</span>
+<span class="nc" id="L80">                res.append(&quot; w&quot;).append(i).append(&quot;=&quot;).append(Long.toBinaryString(words[i]));</span>
+            }
+<span class="nc" id="L82">            return res.toString();</span>
+        }
+    }
+
+    public class SupportBitSet extends BitSet{
+        protected int residue;
+<span class="fc" id="L88">        public SupportBitSet() {</span>
+<span class="fc" id="L89">            super();</span>
+<span class="fc" id="L90">            residue = 0;</span>
+<span class="fc" id="L91">        }</span>
+    }
+    public class MaskBitSet extends BitSet{
+
+        /**
+         * Initializes a bit-set with the same capacity as the outer {@link StateSparseBitSet}.
+         * All the bits are initially unset. The set it represents is thus empty.
+         */
+<span class="fc" id="L99">        public MaskBitSet() {</span>
+<span class="fc" id="L100">            super();</span>
+<span class="fc" id="L101">        }</span>
+
+
+        /**
+         * As for {@link java.util.BitSet#clear()}:
+         * Sets all the bits in this BitSet to false
+         * &lt;p&gt;
+         * The clear is optimized to ignore the empty words in the
+         * associated Reversible Sparse Bit Set
+         */
+        public void clear() {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for (int i = 0; i &lt; nonZeroSize.value(); i++) {</span>
+<span class="nc" id="L113">                this.words[nonZeroIdx[i]] = 0L;</span>
+            }
+<span class="nc" id="L115">        }</span>
+
+        /**
+         * As for {@link java.util.BitSet#or(java.util.BitSet)}:
+         * Performs a logical OR of this bit set with the bit set argument. This
+         * bit set is modified so that a bit in it has the value true if and only
+         * if it either already had the value true or the corresponding bit in the
+         * bit set argument has the value true.
+         * &lt;p&gt;
+         * The logical OR is optimized to ignore the empty words in the
+         * associated Reversible Sparse Bit Set
+         *
+         * @param other the other bit-set to make the union with
+         */
+        public void or(BitSet other) {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            for (int i = 0; i &lt; nonZeroSize.value(); i++) {</span>
+<span class="nc" id="L131">                this.words[nonZeroIdx[i]] |= other.words[nonZeroIdx[i]];</span>
+            }
+<span class="nc" id="L133">        }</span>
+
+        /**
+         * As for {@link java.util.BitSet#and(java.util.BitSet)}:
+         * Performs a logical AND of this target bit set with the argument
+         * bit set. This bit set is modified so that each bit in it has the value
+         * true if and only if it both initially had the value true and the
+         * corresponding bit in the bit set argument also had the value true.
+         * &lt;p&gt;
+         * The logical AND is optimized to ignore the empty words in the
+         * associated Reversible Sparse Bit Set
+         *
+         * @param other the other bit-set to make the intersection with
+         */
+        public void and(BitSet other) {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">            for (int i = 0; i &lt; nonZeroSize.value(); i++) {</span>
+<span class="nc" id="L149">                this.words[nonZeroIdx[i]] &amp;= other.words[nonZeroIdx[i]];</span>
+            }
+<span class="nc" id="L151">        }</span>
+    }
+
+
+    /**
+     * Creates a StateSparseSet with n bits, initially all set
+     *
+     * @param sm the state manager
+     * @param n  the number of bits
+     */
+<span class="fc" id="L161">    public StateSparseBitSet(StateManager sm, int n) {</span>
+<span class="fc" id="L162">        nWords = (n + 63) &gt;&gt;&gt; 6; // divided by 64</span>
+<span class="fc" id="L163">        words = new State[nWords];</span>
+<span class="fc" id="L164">        Arrays.setAll(words, i -&gt; sm.makeStateRef(0xFFFFFFFFFFFFFFFFL));</span>
+<span class="fc" id="L165">        nonZeroIdx = new int[nWords];</span>
+<span class="fc" id="L166">        Arrays.setAll(nonZeroIdx, i -&gt; i);</span>
+<span class="fc" id="L167">        nonZeroSize = sm.makeStateInt(nWords);</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * As for {@link java.util.BitSet#and(java.util.BitSet)}:
+     * Performs a logical AND of this target bit set with the argument
+     * bit set. This bit set is modified so that each bit in it has the value
+     * true if and only if it both initially had the value true and the
+     * corresponding bit in the bit set argument also had the value true.
+     * &lt;p&gt;
+     * The logical AND is optimized to ignore the empty words in the
+     * associated Reversible Sparse Bit Set
+     *
+     * @param bs the sparset-set to intersect with
+     */
+    public void and(BitSet bs) {
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        for (int i = nonZeroSize.value() - 1; i &gt;= 0; i--) {</span>
+<span class="fc" id="L184">            State&lt;Long&gt; w = words[nonZeroIdx[i]];</span>
+<span class="fc" id="L185">            long wn = w.value() &amp; bs.words[nonZeroIdx[i]];</span>
+<span class="fc" id="L186">            w.setValue(wn);</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            if (wn == 0L) { // swap with last non-zero word</span>
+<span class="fc" id="L188">                nonZeroSize.decrement();</span>
+<span class="fc" id="L189">                int tmp = nonZeroIdx[i];</span>
+<span class="fc" id="L190">                nonZeroIdx[i] = nonZeroIdx[nonZeroSize.value()];</span>
+<span class="fc" id="L191">                nonZeroIdx[nonZeroSize.value()] = tmp;</span>
+            }
+        }
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * As for the {@link java.util.BitSet#isEmpty()} function:
+     * Returns true if this BitSet contains no bits that are set to true.
+     *
+     * @return true if empty, false otherwise
+     */
+    public boolean isEmpty() {
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        return nonZeroSize.value() == 0;</span>
+    }
+
+
+    /**
+     * Returns true if, for the given {@link SupportBitSet#words} id stored in by the {@link SupportBitSet#residue} of
+     * the specified {@link SupportBitSet} bs,
+     * bs has any bits set to true
+     * that are also set to true in the corresponding {@link StateSparseBitSet#words} of this BitSet.
+     * &lt;p&gt;
+     *
+     * @param bs the bitset to test the intersection with
+     * @return true if the intersection is non-empty
+     */
+    protected boolean intersectsResidueOnly(SupportBitSet bs) {
+        // TODO 1: use the residue to test if the non-empty intersection stored is still non-empty
+<span class="fc" id="L219">         throw new NotImplementedException(&quot;StateSparseBitSet&quot;);</span>
+    }
+
+    /**
+     * As for the {@link java.util.BitSet#intersects(java.util.BitSet)} function:
+     * Returns true if the specified {@link SupportBitSet} has any bits set to true
+     * that are also set to true in this {@link StateSparseBitSet}.
+     * &lt;p&gt;
+     * The intersection test is optimized to ignore the empty words in the
+     * associated Reversible Sparse Bit Set
+     *
+     * @param bs the bitset to test the intersection with
+     * @return true if the intersection is non-empty
+     */
+    public boolean intersects(SupportBitSet bs) {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (intersectsResidueOnly(bs)) {</span>
+<span class="nc" id="L235">            return true;</span>
+        }
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        for (int i = nonZeroSize.value() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L238">            int idx = nonZeroIdx[i];</span>
+<span class="nc" id="L239">            State&lt;Long&gt; w = words[idx];</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">            if ((w.value() &amp; bs.words[idx]) != 0L) {</span>
+                // TODO 2: store the new non-empty intersection using residue of bs
+                
+<span class="nc" id="L243">                return true;</span>
+            }
+        }
+<span class="nc" id="L246">        return false;</span>
+    }
+
+    /**
+     * As for the {@link java.util.BitSet#get(int)}
+     * Gives the bit at the specified index.
+     * &lt;p&gt;
+     * This method is not the most efficient to iterate on bitsets, and should only be used for debugging purposes.
+     * Use logical operations such as {@link StateSparseBitSet#and(BitSet)} in your own implementation.
+     *
+     * @param i the bit to return
+     * @return true if bit at index i is set
+     */
+    public boolean get(int i) {
+<span class="nc" id="L260">        int wordIndex = i &gt;&gt;&gt; 6;</span>
+<span class="nc" id="L261">        int nonZero = nonZeroSize.value();</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        for (int j = 0; j &lt; nonZero; j++) {</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">            if (wordIndex == nonZeroIdx[j]) {</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                return (this.words[wordIndex].value() &amp; 1L &lt;&lt; i) != 0L;</span>
+            }
+        }
+<span class="nc" id="L267">        return false;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L272">        StringBuilder res = new StringBuilder();</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int i = 0; i &lt; nonZeroSize.value(); i++) {</span>
+<span class="nc" id="L274">            res.append(&quot; w&quot;).append(nonZeroIdx[i]).append(&quot;=&quot;).append(Long.toBinaryString(words[nonZeroIdx[i]].value()));</span>
+        }
+<span class="nc" id="L276">        return res.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

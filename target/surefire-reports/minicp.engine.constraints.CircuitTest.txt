@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: minicp.engine.constraints.CircuitTest
+-------------------------------------------------------------------------------
+Tests run: 49, Failures: 0, Errors: 0, Skipped: 47, Time elapsed: 0.092 s - in minicp.engine.constraints.CircuitTest

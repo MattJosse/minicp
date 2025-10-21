@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: minicp.examples.TSPTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 7, Time elapsed: 0.199 s - in minicp.examples.TSPTest

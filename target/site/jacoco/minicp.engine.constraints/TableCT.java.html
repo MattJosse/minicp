@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TableCT.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">minicp:minicp</a> &gt; <a href="index.source.html" class="el_package">minicp.engine.constraints</a> &gt; <span class="el_source">TableCT.java</span></div><h1>TableCT.java</h1><pre class="source lang-java linenums">/*
+ * mini-cp is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License  v3
+ * as published by the Free Software Foundation.
+ *
+ * mini-cp is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY.
+ * See the GNU Lesser General Public License  for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with mini-cp. If not, see http://www.gnu.org/licenses/lgpl-3.0.en.html
+ *
+ * Copyright (c)  2018. by Laurent Michel, Pierre Schaus, Pascal Van Hentenryck
+ */
+
+package minicp.engine.constraints;
+
+import minicp.engine.core.AbstractConstraint;
+import minicp.engine.core.IntVar;
+import minicp.state.StateInt;
+import minicp.state.StateSparseBitSet;
+import minicp.util.exception.InconsistencyException;
+import minicp.util.exception.NotImplementedException;
+
+import java.util.Arrays;
+
+import static minicp.cp.Factory.minus;
+
+/**
+ * Implementation of Compact Table algorithm described in
+ * &lt;p&gt;&lt;i&gt;Compact-Table: Efficiently Filtering Table Constraints with Reversible Sparse Bit-Sets&lt;/i&gt;
+ * Jordan Demeulenaere, Renaud Hartert, Christophe Lecoutre, Guillaume Perez, Laurent Perron, Jean-Charles Régin, Pierre Schaus
+ * &lt;p&gt;See &lt;a href=&quot;https://www.info.ucl.ac.be/~pschaus/assets/publi/cp2016-compacttable.pdf&quot;&gt;The article.&lt;/a&gt;
+ */
+public class TableCT extends AbstractConstraint {
+    private IntVar[] x; //variables
+    private int[][] table; //the table
+    //supports[i][v] is the set of tuples supported by x[i]=v
+    protected StateSparseBitSet.SupportBitSet[][] supports;
+
+    protected StateSparseBitSet supportedTuples;
+    private StateSparseBitSet.MaskBitSet tmpSupport;
+
+    private StateInt[] lastDomSize; // store the last size of the domain of the variable
+    private int[] dom; // domain iterator
+
+    /**
+     * Table constraint.
+     * &lt;p&gt;The table constraint ensures that
+     * {@code x} is a row from the given table.
+     * More exactly, there exist some row &lt;i&gt;i&lt;/i&gt;
+     * such that
+     * {@code x[0]==table[i][0], x[1]==table[i][1], etc}.
+     *
+     * &lt;p&gt;This constraint is sometimes called &lt;i&gt;in extension&lt;/i&gt; constraint
+     * as the user enumerates the set of solutions that can be taken
+     * by the variables.
+     *
+     * @param x  the non empty set of variables to constraint
+     * @param table the possible set of solutions for x.
+     *              The second dimension must be of the same size as the array x.
+     */
+    public TableCT(IntVar[] x, int[][] table) {
+<span class="fc" id="L64">        super(x[0].getSolver());</span>
+<span class="fc" id="L65">        this.x = new IntVar[x.length];</span>
+<span class="fc" id="L66">        this.table = table;</span>
+<span class="fc" id="L67">        dom = new int[Arrays.stream(x).map(var -&gt; var.size()).max(Integer::compare).get()];</span>
+
+<span class="fc" id="L69">        supportedTuples = new StateSparseBitSet(this.getSolver().getStateManager(), table.length);</span>
+
+        // Allocate supports
+<span class="fc" id="L72">        supports = new StateSparseBitSet.SupportBitSet[x.length][];</span>
+<span class="fc" id="L73">        lastDomSize = new StateInt[x.length];</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="fc" id="L75">            this.x[i] = minus(x[i], x[i].min()); // map the variables domain to start at 0</span>
+<span class="fc" id="L76">            supports[i] = new StateSparseBitSet.SupportBitSet[x[i].max() - x[i].min() + 1];</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            for (int v = 0; v &lt; supports[i].length; v++) {</span>
+<span class="fc" id="L78">                supports[i][v] = supportedTuples.new SupportBitSet();</span>
+            }
+<span class="fc" id="L80">            lastDomSize[i] = this.getSolver().getStateManager().makeStateInt(-1); // put to -1 to force initial propagation to check all vars</span>
+        }
+
+        // Set the supports for each var-va
+<span class="pc bfc" id="L84" title="All 2 branches covered.">        for (int t = 0; t &lt; table.length; t++) { // t is the index of the tuple (in table)</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            for (int i = 0; i &lt; x.length; i++) { // i is the index of the current variable (in x)</span>
+                // TODO 1: fill the support bitset
+                //  supports[i][v] is the set of tuples supported by x[i]=v
+                //  hint: use supports[i][v].set(...)
+<span class="fc" id="L89">                 throw new NotImplementedException(&quot;TableCT&quot;);</span>
+            }
+        }
+
+<span class="fc" id="L93">        tmpSupport = supportedTuples.new MaskBitSet();</span>
+<span class="fc" id="L94">    }</span>
+
+    @Override
+    public void post() {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        for (IntVar var : x) {</span>
+<span class="fc" id="L99">            var.propagateOnDomainChange(this);</span>
+        }
+<span class="nc" id="L101">        propagate();</span>
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Tells if a variable x[i] has been modified since the last call node in the search tree
+     * Uses the value of {@link TableCT#lastDomSize} to verify if the domain size has changed since the last propagation
+     *
+     * @param i index of the variable in {@link TableCT#x} that must be checked
+     * @return true if the domain of x[i] has been changed since the last propagation
+     */
+    public boolean hasChanged(int i) {
+        // TODO 2: use lastDomSize[i] to verify if the domain size of x[i] has changed since last propagation
+<span class="fc" id="L113">         throw new NotImplementedException(&quot;TableCT&quot;);</span>
+    }
+
+    @Override
+    public void propagate() {
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (hasChanged(i)) {</span>
+                // TODO 3: update supportedTuples as
+                // supportedTuples &amp;= (supports[i][x[i].min()] | ... | supports[i][x[i].max()] )
+                // for all x[i] modified since last call node in the search tree (see TODO 2 )
+            }
+        }
+
+        // TODO 4 filter impossible values
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="nc" id="L128">            int nVal = x[i].fillArray(dom);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            for (int v = 0; v &lt; nVal; v++) {</span>
+                    // TODO 4 the condition for removing the setValue dom[v] from x[i] is to check if
+                    //  there is no intersection between supportedTuples and the support[i][dom[v]]
+
+            }
+<span class="nc" id="L134">            lastDomSize[i].setValue(x[i].size()); // store the current domain size to compare during next propagation</span>
+        }
+<span class="nc" id="L136">         throw new NotImplementedException(&quot;TableCT&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
