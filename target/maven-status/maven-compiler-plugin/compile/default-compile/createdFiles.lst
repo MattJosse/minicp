@@ -9,6 +9,7 @@ minicp\examples\VRP.class
 minicp\cp\BranchingScheme.class
 minicp\state\Copier.class
 minicp\state\CopyMap.class
+minicp\engine\constraints\SumLessOrEqual.class
 minicp\examples\SMoney.class
 minicp\util\io\cpprofilerbridge\Message.class
 minicp\engine\core\IntVarImpl$1.class
@@ -129,6 +130,7 @@ minicp\state\TrailInt.class
 minicp\search\StopSearchException.class
 minicp\engine\constraints\Absolute.class
 minicp\engine\constraints\Profile$1.class
+minicp\engine\constraints\tp2.class
 minicp\search\DFSListener.class
 minicp\engine\constraints\Profile$Rectangle.class
 minicp\engine\core\DomainListener.class
