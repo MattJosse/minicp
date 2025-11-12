@@ -25,7 +25,6 @@ public class Tp2Test {
 
         int domaineMin = Integer.parseInt(args[0]);
         int domaineMax = Integer.parseInt(args[1]);
-        int cte = Integer.parseInt(args[2]);
 
         Solver cp = Factory.makeSolver();
 
@@ -40,8 +39,8 @@ public class Tp2Test {
         DFSearch dfs = makeDfs(cp, firstFail(new IntVar[]{x, y[0], y[1], z}));
 
         dfs.onSolution(() -> {
-            System.out.println("Solution found");
-            System.out.println("x = " + x.min() + " y = " + y[0].min() + ", " + y[1].min() + " z = " + z.min());
+            //System.out.println("Solution found");
+            //System.out.println("x = " + x.min() + " y = " + y[0].min() + ", " + y[1].min() + " z = " + z.min());
         });
 
         SearchStatistics stats = dfs.solve();

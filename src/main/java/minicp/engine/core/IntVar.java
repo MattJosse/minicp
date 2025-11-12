@@ -83,6 +83,51 @@ public interface IntVar {
      */
     void propagateOnBoundChange(Constraint c);
 
+    // My work below *******************************************************************************
+
+    /**
+     * Asks that {@link Constraint#propagate()} is called whenever the
+     * bound (minimum values) of the domain
+     * of this variable is changes.
+     * We say that a <i>bound change</i> event occurs in this case.
+     *
+     * @param c the constraint for which the {@link Constraint#propagate()}
+     *          method should be called on bound change events of this variable.
+     */
+    void propagateOnMinChange(Constraint c);
+
+    /**
+     * Asks that {@link Constraint#propagate()} is called whenever the
+     * bound (maximum values) of the domain
+     * of this variable is changes.
+     * We say that a <i>bound change</i> event occurs in this case.
+     *
+     * @param c the constraint for which the {@link Constraint#propagate()}
+     *          method should be called on bound change events of this variable.
+     */
+    void propagateOnMaxChange(Constraint c);
+
+
+    /**
+     * Asks that {@link Constraint#propagate()} is called whenever the
+     * zero value is no longer in the domain
+     * of this variable is changes.
+     * We say that a <i>bound change</i> event occurs in this case.
+     *
+     * @param c the constraint for which the {@link Constraint#propagate()}
+     *          method should be called on bound change events of this variable.
+     */
+    void propagateOnNotZero(Constraint c);
+
+    /**
+     * Returns true if the domain of the variable has a single value.
+     *
+     * @return true if the domain of the variable contains zero.
+     */
+    boolean canBeZero();
+
+    // *******************************************************************************
+
 
     /**
      * Returns the minimum of the domain of the variable
@@ -120,6 +165,8 @@ public interface IntVar {
      * @return true if the domain of the variable is a singleton.
      */
     boolean isFixed();
+ 
+
 
     /**
      * Returns true if the domain contains the specified value.

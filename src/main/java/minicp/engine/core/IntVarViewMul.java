@@ -74,6 +74,31 @@ public class IntVarViewMul implements IntVar {
         x.propagateOnBoundChange(c);
     }
 
+    // My work below *******************************************************************************
+
+    @Override
+    public void propagateOnNotZero(Constraint c) {
+        x.propagateOnNotZero(c);
+    }
+
+    @Override
+    public void propagateOnMinChange(Constraint c) {
+        x.propagateOnMinChange(c);
+    }
+
+    @Override
+    public void propagateOnMaxChange(Constraint c) {
+        x.propagateOnMaxChange(c);
+    }
+
+    @Override
+    public boolean canBeZero() {
+        return x.canBeZero();
+    }
+
+    // *******************************************************************************
+
+
     @Override
     public int min() {
         if (a >= 0)

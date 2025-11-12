@@ -34,13 +34,17 @@ public class IntVarImpl implements IntVar {
     private final StateStack<Constraint> onDomain;
     private final StateStack<Constraint> onFix;
     private final StateStack<Constraint> onBound;
+    private final StateStack<Constraint> onNotZero;
+    private final StateStack<Constraint> onMin;
+    private final StateStack<Constraint> onMax;
+
 
     private final DomainListener domListener = new DomainListener() {
         @Override
         public void empty() {
             throw InconsistencyException.INCONSISTENCY; // Integer Vars cannot be empty
         }
-
+        //Here are the methods of the domain listener : whenever all those methods are called, we schedule the appropriate constraints.
         @Override
         public void fix() {
             scheduleAll(onFix);
@@ -54,11 +58,22 @@ public class IntVarImpl implements IntVar {
         @Override
         public void changeMin() {
             scheduleAll(onBound);
+            scheduleAll(onMin);
         }
 
         @Override
         public void changeMax() {
+
             scheduleAll(onBound);
+            scheduleAll(onMax);
+        }
+
+        @Override
+        public void zeroOut() {
+            if ( onNotZero.size()== 1 ) {
+                System.out.println("scheduling onNotZero constraint");
+            }
+            scheduleAll(onNotZero);
         }
     };
 
@@ -89,6 +104,12 @@ public class IntVarImpl implements IntVar {
         onDomain = new StateStack<>(cp.getStateManager());
         onFix = new StateStack<>(cp.getStateManager());
         onBound = new StateStack<>(cp.getStateManager());
+
+        //My work below
+        onNotZero = new StateStack<>(cp.getStateManager());
+        onMin = new StateStack<>(cp.getStateManager());
+        onMax = new StateStack<>(cp.getStateManager());
+        //
     }
 
 
@@ -111,6 +132,10 @@ public class IntVarImpl implements IntVar {
     @Override
     public boolean isFixed() {
         return domain.isSingleton();
+    }
+
+    public boolean canBeZero() {
+        return domain.canBeZero();
     }
 
     @Override
@@ -154,6 +179,27 @@ public class IntVarImpl implements IntVar {
         onBound.push(c);
     }
 
+    //My work below
+    @Override
+    public void propagateOnNotZero(Constraint c) {
+        System.out.println("propagateOnNotZero called");
+        System.out.println("size of onNotZero before push: " + onNotZero.size());
+
+        onNotZero.push(c);
+        System.out.println("size of onNotZero after push: " + onNotZero.size());
+
+    }
+
+    @Override
+    public void propagateOnMinChange(Constraint c) {
+        onMin.push(c);
+    }
+
+    @Override
+    public void propagateOnMaxChange(Constraint c) {
+        onMax.push(c);
+    }
+    //
 
     protected void scheduleAll(StateStack<Constraint> constraints) {
         for (int i = 0; i < constraints.size(); i++)

@@ -59,6 +59,16 @@ public interface IntDomain {
      */
     boolean isSingleton();
 
+    
+    /**
+     * Checks if the domain can be zero
+     *
+     * @return true if the domain can be zero,
+     *         false otherwise
+     */
+    public boolean canBeZero();
+
+
     /**
      * Removes a value from the domain and notifies appropriately the listener.
      *
@@ -77,6 +87,8 @@ public interface IntDomain {
      *              <li> {@link DomainListener#empty()}  is called
      *              if v is the last value in the domain i.e.
      *              the domain is empty after this operation</li>
+     *              <li> {@link DomainListener#zeroOut()} is called
+     *              if v = 0.</li>
      *         </ul>
      */
     void remove(int v, DomainListener l);
@@ -99,6 +111,8 @@ public interface IntDomain {
      *              <li> {@link DomainListener#empty()}  is called
      *              if v is not in the domain i.e.
      *              the domain is empty after this operation</li>
+     * 
+     *  
      *         </ul>
      */
     void removeAllBut(int v, DomainListener l);
@@ -118,6 +132,8 @@ public interface IntDomain {
      *              <li> {@link DomainListener#empty()} is called
      *              if v is larger than the maximum value i.e.
      *              the domain is empty after this operation</li>
+     *              <li> {@link DomainListener#zeroOut()} is called
+     *              if v is > 0. and the minimum value is <= 0.</li>
      *         </ul>
      */
     void removeBelow(int v, DomainListener l);
@@ -137,9 +153,12 @@ public interface IntDomain {
      *              <li> {@link DomainListener#empty()} is called
      *              if v is less than the minimum value i.e.
      *              the domain is empty after this operation</li>
+     *              <li> {@link DomainListener#zeroOut()} is called
+     *              if v < 0. and the maximum is >= 0.</li>
      *         </ul>
      */
     void removeAbove(int v, DomainListener l);
+
 
     /**
      * Copies the values of the domain into an array.

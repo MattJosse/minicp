@@ -87,6 +87,22 @@ public class BoolVarImpl implements BoolVar {
     }
 
     @Override
+    public void propagateOnNotZero(Constraint c) {
+        binaryVar.propagateOnNotZero(c);
+    }
+
+    @Override
+    public void propagateOnMinChange(Constraint c) {
+        binaryVar.propagateOnMinChange(c);
+    }
+
+    @Override
+    public void propagateOnMaxChange(Constraint c) {
+        binaryVar.propagateOnMaxChange(c);
+    }
+
+
+    @Override
     public int min() {
         return binaryVar.min();
     }
@@ -109,6 +125,11 @@ public class BoolVarImpl implements BoolVar {
     @Override
     public boolean isFixed() {
         return binaryVar.isFixed();
+    }
+
+    @Override
+    public boolean canBeZero() {
+        return binaryVar.canBeZero();
     }
 
     @Override

@@ -46,4 +46,9 @@ public interface DomainListener {
      * Called whenever the maximum value of the domain is lost.
      */
     void changeMax();
+
+    /**
+     * Called whenever zero is removed from the domain.
+     */
+    void zeroOut();
 }
