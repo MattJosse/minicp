@@ -153,6 +153,35 @@ public final class BranchingScheme {
         return new Sequencer(choices);
     }
 
+    /** SH
+     * Split Domain Range strategy.
+     * It selects the variable with the largest domain amplitude (max - min).
+     * Then it creates two branches that split the domain in half.
+     * The left branch assigns the variable to values in the lower half,
+     * and the right branch assigns values in the upper half.
+     * @param x the variables on which the split domain range strategy is applied.
+     * @return a split domain range branching strategy
+     * @see Factory#makeDfs(Solver, Supplier)
+     */
+    public static Supplier<Procedure[]> splitDomRange(IntVar... x) {
+        return () -> {
+            // Select variable with largest domain amplitude
+            IntVar xs = selectMin(x,
+                    xi -> xi.size() > 1,
+                    xi -> -(xi.max() - xi.min())); // negative to find max instead of min
+            if (xs == null)
+                return EMPTY;
+            else {
+                int min = xs.min();
+                int max = xs.max();
+                int mid = (min + max) / 2;
+                return branch(
+                        () -> xs.getSolver().post(Factory.lessOrEqual(xs, mid)),
+                        () -> xs.getSolver().post(Factory.largerOrEqual(xs, mid + 1)));
+            }
+        };
+    }
+
     /**
      * Limited Discrepancy Search combinator
      * that limits the number of right decisions

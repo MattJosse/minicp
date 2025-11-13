@@ -57,11 +57,11 @@ public class tp2 extends AbstractConstraint { //see doc
         this.z = z;
         this.n = y.length;
 
-        min = new int[y.length];                                                    //array of minimums of variables of y.Doesnt need state int cause doesnt need to backtrack.
-        nFixed = getSolver().getStateManager().makeStateInt(0);                     // number of fixed variables. Can backtrack.
-        sumFixed = getSolver().getStateManager().makeStateRef(Long.valueOf(0));   // sum of fixed variables. Can backtrack.
-        fixed = IntStream.range(0, n).toArray();                     // array of indexes of not fixed variables. 
-        xCanZero = getSolver().getStateManager().makeStateInt(0);                   // indicates if x can be zero. Can backtrack.
+        min = new int[y.length];                                                    // array of minimums of variables of y. Doesnt need state int cause doesnt need to backtrack.
+        nFixed = getSolver().getStateManager().makeStateInt(0);          // number of fixed variables. Can backtrack.
+        sumFixed = getSolver().getStateManager().makeStateRef(Long.valueOf(0));  // sum of fixed variables. Can backtrack.
+        fixed = IntStream.range(0, n).toArray();                    // array of indexes of not fixed variables. 
+        xCanZero = getSolver().getStateManager().makeStateInt(0);        // indicates if x can be zero. Can backtrack.
         
 
     }

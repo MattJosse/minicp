@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: minicp.examples.StableMatchingTest
--------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 0.254 s - in minicp.examples.StableMatchingTest

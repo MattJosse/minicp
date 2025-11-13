@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: minicp.engine.constraints.Element1DDCTest
--------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 0.008 s - in minicp.engine.constraints.Element1DDCTest

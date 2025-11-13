@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: minicp.engine.constraints.DisjunctiveTest
--------------------------------------------------------------------------------
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 18, Time elapsed: 0.029 s - in minicp.engine.constraints.DisjunctiveTest

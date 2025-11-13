@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: minicp.state.StateSparseBitSetTest
--------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 10, Time elapsed: 0.176 s - in minicp.state.StateSparseBitSetTest

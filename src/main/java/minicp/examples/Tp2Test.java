@@ -36,7 +36,8 @@ public class Tp2Test {
 
         cp.post(new tp2(x, y, z));
 
-        DFSearch dfs = makeDfs(cp, firstFail(new IntVar[]{x, y[0], y[1], z}));
+        //DFSearch dfs = makeDfs(cp, firstFail(new IntVar[]{x, y[0], y[1], z}));
+        DFSearch dfs = makeDfs(cp, splitDomRange(new IntVar[]{x, y[0], y[1], z}));
 
         dfs.onSolution(() -> {
             //System.out.println("Solution found");
