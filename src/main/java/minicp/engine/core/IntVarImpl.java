@@ -70,9 +70,7 @@ public class IntVarImpl implements IntVar {
 
         @Override
         public void zeroOut() {
-            if ( onNotZero.size()== 1 ) {
-                System.out.println("scheduling onNotZero constraint");
-            }
+
             scheduleAll(onNotZero);
         }
     };
@@ -182,11 +180,7 @@ public class IntVarImpl implements IntVar {
     //My work below
     @Override
     public void propagateOnNotZero(Constraint c) {
-        System.out.println("propagateOnNotZero called");
-        System.out.println("size of onNotZero before push: " + onNotZero.size());
-
         onNotZero.push(c);
-        System.out.println("size of onNotZero after push: " + onNotZero.size());
 
     }
 

@@ -68,13 +68,13 @@ public class tp2 extends AbstractConstraint { //see doc
 
     @Override
     public void post() {
-        //#we should progate on min change. @TODO check if correct
+        //#we should progate on min change.
         for (IntVar var : y)
             var.propagateOnMinChange(this);
 
-        //#We should propagate on max change. @TODO check if correct
+        //#We should propagate on max change.
         z.propagateOnMaxChange(this);
-        //#We should propagate on zero change. @TODO check if correct
+        //#We should propagate on zero change. 
         x.propagateOnNotZero(this);
         propagate();
     }
